@@ -5,13 +5,13 @@ var svg;
 var dataset = [ 5, 10, 15, 20, 25, 3];
 
 var createSVG = function (w, h) {
-  return d3.select("body")
+  return d3.select(".svgContainer")
     .append("svg")
     .attr("width", w)
     .attr("height", h)
     .attr("x", 100)
     .attr("class", "field");
-}
+};
 
 var initializePlayer = function(svg, x, y){
   x = x || (0.5 * w);
@@ -32,7 +32,7 @@ var initializePlayer = function(svg, x, y){
     })
     .attr("class", "player")
     .style("fill", "steelblue");
-}
+};
 
 var createCircles = function(svg, dataset) {
   return svg.selectAll("circle")
@@ -89,6 +89,7 @@ var gameOver = function(svg){
       console.log("Game Over");
       $("svg").off("mousemove");
       clearInterval(running);
+      clearInterval(collisionRunning);
       clearInterval(scoreTimer);
     };
   }
@@ -113,7 +114,7 @@ var trackPlayer = function(event) {
         return d.y - 10;
       });
   });
-}
+};
 
 svg = createSVG(w, h);
 initializePlayer(svg);

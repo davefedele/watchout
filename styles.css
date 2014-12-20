@@ -25,3 +25,14 @@ text {
   border: 1px solid red;
   fill: blue;
 }
+
+.scoreboard {
+  background-color: lightgray;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-family: 'Indie Flower', cursive;
+  margin: 50px auto;
+  padding: 5px;
+  text-shadow: 1px 1px 1px white;
+  width: 150px;
+}
