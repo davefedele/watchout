@@ -20,9 +20,9 @@ var initializePlayer = function(svg, x, y){
     .enter()
     .append("rect")
     .attr("x", function(d) {
-              return d.x;})
+              return d.x - 10;})
     .attr("y",  function(d) {
-              return d.y;})
+              return d.y - 10;})
     .attr("height", function(d){
       return 20;
     })
@@ -86,7 +86,9 @@ var gameOver = function(svg){
   for( var i=0; i<enemies[0].length; i++ ) {
     if (isColliding(player, enemies[0][i])) {
       console.log("Game Over");
+      $("svg").off("mousemove");
       clearInterval(running);
+      clearInterval(scoreTimer);
     };
   }
 
@@ -99,41 +101,34 @@ var gameOver = function(svg){
 };
 
 var trackPlayer = function(event) {
-  track = setInterval(function(event) {
-    $(".player").mousemove(function(event) {
-      var location = [{x: event.offsetX, y: event.offsetY}];
-      d3.selectAll(".player")
-        .data(location)
-        .attr("x", function(d) {
-          return d.x;
-        })
-        .attr("y", function(d) {
-          return d.y;
-        })
-        .transition()
-        .duration(200);
-    });
-  }, 200);
+  $("svg").mousemove(function(event) {
+    var location = [{x: event.offsetX, y: event.offsetY}];
+    d3.selectAll(".player")
+      .data(location)
+      .attr("x", function(d) {
+        return d.x - 10;
+      })
+      .attr("y", function(d) {
+        return d.y - 10;
+      });
+  });
 }
 
 svg = createSVG(w, h);
 initializePlayer(svg);
 createCircles(svg, dataset);
+var gameStartTime = Date.now();
 $('.player').mousedown(trackPlayer);
 $(".player").mouseup(function() {
-  console.log("hello");
-  clearInterval(track);
+  $("svg").off("mousemove");
 });
-// $('svg').mousemove(function(evt) {console.log(evt.offsetX, evt.offsetY);});
-// mousedown on .player
-// get client X & Y
-// update player X & Y
-// mouseup end event.
 
 //declare as var so we can stop setInterval call
 var running = setInterval(function() {circlesTransition(svg);}, 4000);
 var collisionRunning = setInterval(function(){gameOver(svg);}, 200);
-
+var scoreTimer = setInterval(function(){
+  var score = Math.floor((Date.now() - gameStartTime)/100);
+  $(".current span").text(score);}, 50);
 // set boundaries for objects.
 // 
 
