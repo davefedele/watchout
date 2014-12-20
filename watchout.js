@@ -1,6 +1,8 @@
 //screen width and height
 var w = 640;
 var h = 480;
+var svg;
+var dataset = [ 5, 10, 15, 20, 25, 3];
 
 var createSVG = function (w, h) {
   return d3.select("body")
@@ -9,9 +11,6 @@ var createSVG = function (w, h) {
     .attr("height", h)
     .attr("class", "field");
 }
-var svg = createSVG(w, h);
-
-var dataset = [ 5, 10, 15, 20, 25, 3];
 
 var initializePlayer = function(svg, x, y){
   x = x || (0.5 * w);
@@ -80,7 +79,6 @@ var circlesTransition = function(svg){
 
 var gameOver = function(svg){
 
-  // debugger;
   var player  = svg.selectAll(".player")[0][0];
   var enemies = svg.selectAll(".enemies");
   
@@ -100,8 +98,37 @@ var gameOver = function(svg){
   }
 };
 
+var trackPlayer = function(event) {
+  track = setInterval(function(event) {
+    $(".player").mousemove(function(event) {
+      var location = [{x: event.offsetX, y: event.offsetY}];
+      d3.selectAll(".player")
+        .data(location)
+        .attr("x", function(d) {
+          return d.x;
+        })
+        .attr("y", function(d) {
+          return d.y;
+        })
+        .transition()
+        .duration(200);
+    });
+  }, 200);
+}
+
+svg = createSVG(w, h);
 initializePlayer(svg);
 createCircles(svg, dataset);
+$('.player').mousedown(trackPlayer);
+$(".player").mouseup(function() {
+  console.log("hello");
+  clearInterval(track);
+});
+// $('svg').mousemove(function(evt) {console.log(evt.offsetX, evt.offsetY);});
+// mousedown on .player
+// get client X & Y
+// update player X & Y
+// mouseup end event.
 
 //declare as var so we can stop setInterval call
 var running = setInterval(function() {circlesTransition(svg);}, 4000);
