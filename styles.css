@@ -18,3 +18,8 @@ text {
 .field {
   border: 1px solid black;
 }
+
+.player {
+  border: 1px solid red;
+  fill: blue;
+}
