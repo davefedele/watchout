@@ -9,6 +9,7 @@ var createSVG = function (w, h) {
     .append("svg")
     .attr("width", w)
     .attr("height", h)
+    .attr("x", 100)
     .attr("class", "field");
 }
 
@@ -124,7 +125,7 @@ $(".player").mouseup(function() {
 });
 
 //declare as var so we can stop setInterval call
-var running = setInterval(function() {circlesTransition(svg);}, 4000);
+var running = setInterval(function() {circlesTransition(svg);}, 1000);
 var collisionRunning = setInterval(function(){gameOver(svg);}, 200);
 var scoreTimer = setInterval(function(){
   var score = Math.floor((Date.now() - gameStartTime)/100);
