@@ -21,6 +21,12 @@ text {
   margin: 0 auto;
 }
 
+.kapow {
+  display: none;
+  height: 50px;
+  width: 50px;
+}
+
 .player {
   border: 1px solid red;
   fill: blue;
@@ -35,4 +41,20 @@ text {
   padding: 5px;
   text-shadow: 1px 1px 1px white;
   width: 150px;
+}
+
+span {
+  float: right;
+}
+
+path {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0px;
+}
+
+circle {
+  fill: red;
+  stroke: #fff;
+  stroke-width: 3px;
 }

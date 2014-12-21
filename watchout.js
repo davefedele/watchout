@@ -2,7 +2,8 @@
 var w = 640;
 var h = 480;
 var svg;
-var dataset = [ 5, 10, 15, 20, 25, 3];
+// var dataset = [ 5, 10, 15, 20, 25, 3];
+var dataset = [5];
 
 var createSVG = function (w, h) {
   return d3.select(".svgContainer")
@@ -48,35 +49,45 @@ var createCircles = function(svg, dataset) {
           .attr("class", "enemies");
 };
 
-var circlesTransition = function(svg){
-  var circles = svg.selectAll(".enemies")[0].length;
+var circlesTransition = function(svg, points){
+  var points = [
+    [480, 400],
+    [580, 400],
+    [380, 400]
+  ];
 
-  var result = [];
-  for( var i=0; i<circles; i++ ) {
-    result.push(Math.random() * 35 + 10);
+  var path = svg.append("path")
+      .data([points])
+      .attr("d", d3.svg.line()
+      .tension(0) // Catmull–Rom
+      .interpolate("cardinal-open"));
+
+  var circle = svg.append("circle")
+      .attr("r", 13)
+      .attr("transform", "translate(" + points[0] + ")");
+
+  transition();
+
+  function transition() {
+    circle.transition()
+        .duration(1000)
+        .attrTween("transform", translateAlong(path.node()))
+        // .each("end", transition)
+        ;
   }
 
-  svg.selectAll(".enemies")
-      .data(result)
-      .transition()
-      .duration(function(d, i ){
-        return Math.random() * 2500 + 500;})
-      .attr("cy", function(d){
-        return Math.random() * (h - d) + d/2;
-      })
-      .attr("cx", function(d){
-        return Math.random() * (w - d) + d/2;
-      })
-      .attr("r", function(d){
-        return d;
-      })
-      .style("fill-opacity", 1);
+  // Returns an attrTween for translating along the specified path element.
+  function translateAlong(path) {
+    var l = path.getTotalLength();
+    return function(d, i, a) {
+      return function(t) {
+        var p = path.getPointAtLength(t * l);
+        return "translate(" + p.x + "," + p.y + ")";
+      };
+    };
+  }
+
 };
-
-  //detect if collision ocurring b/w 2 objects
-  //loop over all enemies and call collision test
-  // encapsulate in setTimeout figuring out best interval
-
 
 var gameOver = function(svg){
 
@@ -87,10 +98,10 @@ var gameOver = function(svg){
   for( var i=0; i<enemies[0].length; i++ ) {
     if (isColliding(player, enemies[0][i])) {
       console.log("Game Over");
-      $("svg").off("mousemove");
-      clearInterval(running);
-      clearInterval(collisionRunning);
-      clearInterval(scoreTimer);
+      svg.on("mousemove", null);
+      // clearInterval(running);
+      // clearInterval(collisionRunning);
+      d3.timer.flush();
     };
   }
 
@@ -103,34 +114,35 @@ var gameOver = function(svg){
 };
 
 var trackPlayer = function(event) {
-  $("svg").mousemove(function(event) {
-    var location = [{x: event.offsetX, y: event.offsetY}];
-    d3.selectAll(".player")
-      .data(location)
-      .attr("x", function(d) {
-        return d.x - 10;
-      })
-      .attr("y", function(d) {
-        return d.y - 10;
-      });
-  });
+  svg.on("mousemove", function(){
+    var location;
+    location = d3.mouse(this);
+    
+    d3.select(".player")
+      .attr("x", location[0] - 10)
+      .attr("y", location[1] - 10);
+  })
 };
 
 svg = createSVG(w, h);
 initializePlayer(svg);
 createCircles(svg, dataset);
 var gameStartTime = Date.now();
-$('.player').mousedown(trackPlayer);
-$(".player").mouseup(function() {
-  $("svg").off("mousemove");
+// $('.player').mousedown(trackPlayer);
+d3.select(".player").on("mousedown", trackPlayer);
+d3.select(".player").on("mouseup", function() {
+  console.log("mouse up");
+  svg.on("mousemove", null);
 });
 
-//declare as var so we can stop setInterval call
-var running = setInterval(function() {circlesTransition(svg);}, 1000);
-var collisionRunning = setInterval(function(){gameOver(svg);}, 200);
-var scoreTimer = setInterval(function(){
+// var running = setInterval(function() {circlesTransition(svg);}, 1000);
+// var collisionRunning = setInterval(function(){gameOver(svg);}, 200);
+d3.timer(function(){gameOver(svg);});
+
+var scoreTimer = function(){
   var score = Math.floor((Date.now() - gameStartTime)/100);
-  $(".current span").text(score);}, 50);
+  $(".current span").text(score);};
+var keepScore = d3.timer(scoreTimer);
 // set boundaries for objects.
 // 
 
