@@ -2,17 +2,18 @@
 var w = 640;
 var h = 480;
 var svg;
-// var dataset = [ 5, 10, 15, 20, 25, 3];
-var dataset = [5];
+var dataset = [ 5, 10, 15, 20, 25, 3];
+
+var score = 0, highScore=0, collisions=0;
+var running, collisionRunning, keepScore;
 
 var createSVG = function (w, h) {
-  return d3.select(".svgContainer")
+  return d3.select("body")
     .append("svg")
     .attr("width", w)
     .attr("height", h)
-    .attr("x", 100)
     .attr("class", "field");
-};
+}
 
 var initializePlayer = function(svg, x, y){
   x = x || (0.5 * w);
@@ -33,7 +34,7 @@ var initializePlayer = function(svg, x, y){
     })
     .attr("class", "player")
     .style("fill", "steelblue");
-};
+}
 
 var createCircles = function(svg, dataset) {
   return svg.selectAll("circle")
@@ -49,45 +50,35 @@ var createCircles = function(svg, dataset) {
           .attr("class", "enemies");
 };
 
-var circlesTransition = function(svg, points){
-  var points = [
-    [480, 400],
-    [580, 400],
-    [380, 400]
-  ];
+var circlesTransition = function(svg){
+  var circles = svg.selectAll(".enemies")[0].length;
 
-  var path = svg.append("path")
-      .data([points])
-      .attr("d", d3.svg.line()
-      .tension(0) // Catmull–Rom
-      .interpolate("cardinal-open"));
-
-  var circle = svg.append("circle")
-      .attr("r", 13)
-      .attr("transform", "translate(" + points[0] + ")");
-
-  transition();
-
-  function transition() {
-    circle.transition()
-        .duration(1000)
-        .attrTween("transform", translateAlong(path.node()))
-        // .each("end", transition)
-        ;
+  var result = [];
+  for( var i=0; i<circles; i++ ) {
+    result.push(Math.random() * 35 + 10);
   }
 
-  // Returns an attrTween for translating along the specified path element.
-  function translateAlong(path) {
-    var l = path.getTotalLength();
-    return function(d, i, a) {
-      return function(t) {
-        var p = path.getPointAtLength(t * l);
-        return "translate(" + p.x + "," + p.y + ")";
-      };
-    };
-  }
-
+  svg.selectAll(".enemies")
+      .data(result)
+      .transition()
+      .duration(function(d, i ){
+        return Math.random() * 2500 + 500;})
+      .attr("cy", function(d){
+        return Math.random() * (h - d) + d/2;
+      })
+      .attr("cx", function(d){
+        return Math.random() * (w - d) + d/2;
+      })
+      .attr("r", function(d){
+        return d;
+      })
+      .style("fill-opacity", 1);
 };
+
+  //detect if collision ocurring b/w 2 objects
+  //loop over all enemies and call collision test
+  // encapsulate in setTimeout figuring out best interval
+
 
 var gameOver = function(svg){
 
@@ -98,10 +89,12 @@ var gameOver = function(svg){
   for( var i=0; i<enemies[0].length; i++ ) {
     if (isColliding(player, enemies[0][i])) {
       console.log("Game Over");
-      svg.on("mousemove", null);
-      // clearInterval(running);
-      // clearInterval(collisionRunning);
-      d3.timer.flush();
+      $("svg").off("mousemove");
+      collisions++;
+      updateScore();
+      clearInterval(running);
+      clearInterval(collisionRunning);
+      clearInterval(keepScore);
     };
   }
 
@@ -114,35 +107,54 @@ var gameOver = function(svg){
 };
 
 var trackPlayer = function(event) {
-  svg.on("mousemove", function(){
-    var location;
-    location = d3.mouse(this);
-    
-    d3.select(".player")
-      .attr("x", location[0] - 10)
-      .attr("y", location[1] - 10);
-  })
-};
+  $("svg").mousemove(function(event) {
+    var location = [{x: event.offsetX, y: event.offsetY}];
+    d3.selectAll(".player")
+      .data(location)
+      .attr("x", function(d) {
+        return d.x - 10;
+      })
+      .attr("y", function(d) {
+        return d.y - 10;
+      })
+      .transition()
+      .duration(200);
+  });
+}
 
 svg = createSVG(w, h);
 initializePlayer(svg);
 createCircles(svg, dataset);
-var gameStartTime = Date.now();
-// $('.player').mousedown(trackPlayer);
-d3.select(".player").on("mousedown", trackPlayer);
-d3.select(".player").on("mouseup", function() {
-  console.log("mouse up");
-  svg.on("mousemove", null);
+$('.player').mousedown(trackPlayer);
+$(".player").mouseup(function() {
+  $("svg").off("mousemove");
 });
+// $('svg').mousemove(function(evt) {console.log(evt.offsetX, evt.offsetY);});
+// mousedown on .player
+// get client X & Y
+// update player X & Y
+// mouseup end event.
 
-// var running = setInterval(function() {circlesTransition(svg);}, 1000);
-// var collisionRunning = setInterval(function(){gameOver(svg);}, 200);
-d3.timer(function(){gameOver(svg);});
+var updateScore = function() {
+  d3.select(".scoreboard .high span").text(highScore);
+  d3.select(".scoreboard .current span").text(score);
+  d3.select(".scoreboard .collisions span").text(collisions);
+};
 
-var scoreTimer = function(){
-  var score = Math.floor((Date.now() - gameStartTime)/100);
-  $(".current span").text(score);};
-var keepScore = d3.timer(scoreTimer);
+var incrementScore = function(){
+  score = score + 1;
+  highScore = Math.max(score, highScore);
+  updateScore();
+};
+
+var playAgain = function(){
+//declare as var so we can stop setInterval call
+  score = 0;
+  running = setInterval(function() {circlesTransition(svg);}, 4000);
+  collisionRunning = setInterval(function(){gameOver(svg);}, 200);
+  keepScore = setInterval(incrementScore, 100);
+};
+
 // set boundaries for objects.
 // 
 

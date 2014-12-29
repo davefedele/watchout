@@ -37,7 +37,7 @@ text {
   border: 1px solid black;
   border-radius: 5px;
   font-family: 'Indie Flower', cursive;
-  margin: 50px auto;
+  margin: 25px auto;
   padding: 5px;
   text-shadow: 1px 1px 1px white;
   width: 150px;
@@ -57,4 +57,9 @@ circle {
   fill: red;
   stroke: #fff;
   stroke-width: 3px;
+}
+
+.button{
+  margin: 15px auto;
+  width: 25px;
 }
